@@ -1,6 +1,7 @@
-build/
+main
 *.exe
+*.out
+*.app
+tempCoderRunnerFile.cpp
+.DS_Store
 *.o
-.vscode/
-
-
