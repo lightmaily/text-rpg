@@ -9,10 +9,16 @@ struct Player {
     int hp;
     int damage;
 };
+struct Enemy{
+    string name;
+    int hp;
+    int damage;
+};
 
 // Прототипы функций
 void showMenu();
 Player createCharacter();
+Enemy spawnGoblin();
 
 int main() {
     int choice = 0;
@@ -64,4 +70,13 @@ Player createCharacter() {
     newPlayer.damage = 15;
     
     return newPlayer;
+}
+
+Enemy spawnGoblin(){
+    Enemy goblin;
+    goblin.name = "Гоблин";
+    goblin.hp = 50;
+    goblin.damage = 10;
+
+    return goblin;
 }
