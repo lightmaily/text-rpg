@@ -24,11 +24,16 @@ struct Item{
     int damageBonus;
     int defendBonus;
 };
-
+struct ScoreEntry{
+    string playerName;
+    int maxCaveLevel;
+    int finalDamage;
+    int finalDefend;
+};
 // Прототипы функций
 void showMenu();
 Player createCharacter();
-Enemy spawnGoblin();
+Enemy spawnRandomEnemy(int caveLevel);
 bool startFight(Player &hero, Enemy &enemy);
 Item generateRandomItem();
 
@@ -55,19 +60,51 @@ int main() {
                 // Внутренний цикл приключений (пока герой не проиграет)
                 {
                     bool playing = true;
-                    while (playing) {
-                        Enemy goblin = spawnGoblin();
-                        bool won = startFight(hero, goblin);
+                    int caveCounter = 0;
+                    while (playing && hero.hp > 0) {
+                        caveCounter++;
+                        cout << "\n--- ПОДЗЕМЕЛЬЕ №" << caveCounter <<  " ---" << endl;
+                        cout << "Ваше текущее HP: " << hero.hp << endl;
                         
+                        // Спавним случайного врага вместо бесконечного гоблина
+                        Enemy currentEnemy = spawnRandomEnemy(caveCounter);
+                        
+                        bool won = startFight(hero, currentEnemy);
+
                         if (!won) {
-                            cout << "\n[!] Вы сбежали из боя и возвращаетесь в главное меню..." << endl;
-                            playing = false; // Выходим из цикла приключений
-                        } else {
-                            cout << "\nХотите продолжить подземелье? (1 - Идти дальше, 0 - В главное меню): ";
+                            hero.hp -= currentEnemy.damage;
+                            cout << "[!] Вы проиграли схватку и сбегаете из подземелья в ужасе! Осталось HP: " << hero.hp << endl;
+                            
+                            if (hero.hp <= 0) {
+                                cout << "\n[X] КОНЕЦ ИГРЫ: Ваше здоровье упало до нуля. Герой пал смертью храбрых..." << endl;
+                                cout << "=== ТАБЛИЦА РЕКОРДОВ ===" << endl;
+                                cout << "Герой: " << hero.name << " | Достигнуто подземелье: №" << caveCounter << " | Итоговый бонус урона: " << hero.gearDamage << endl;
+                                playing = false;
+                            } else {
+                                cout << "\n[!] Вы отступаете назад, но остаетесь на том же уровне подземелья." << endl;
+                                caveCounter--; 
+                            }
+                        } 
+                        else {
+                            // Меню выбора после победы
+                            cout << "\n Победа! Выберите действие:" << endl;
+                            cout << "1. Идти на следующий уровень подземелья" << endl;
+                            cout << "2. Завершить рейд и зафиксировать рекорд" << endl;
+                            cout << "Ваш выбор: ";
+                            
                             int nextStep;
                             cin >> nextStep;
-                            if (nextStep != 1) {
-                                playing = false;
+                            
+                            if (nextStep == 2) {
+                                cout << "\n========================================" << endl;
+                                cout << "       РЕЗУЛЬТАТ ЗАНЕСЕН В РЕКОРДЫ!     " << endl;
+                                cout << "========================================" << endl;
+                                cout << " Герой: " << hero.name << endl;
+                                cout << " Пройдено подземелий: " << caveCounter << endl;
+                                cout << " Накопленный урон от шмоток: " << hero.gearDamage << endl;
+                                cout << " Защита от шмоток: " << hero.gearDefend << endl;
+                                cout << "========================================" << endl;
+                                playing = false; // Выходим в главное меню
                             }
                         }
                     }
@@ -144,7 +181,7 @@ Player createCharacter() {
     
     // Задаем базовые параметры
     newPlayer.hp = 100;
-    newPlayer.damage = 15;
+    newPlayer.damage = 20;
 
     // Шмотки
     newPlayer.gearDamage = 0;
@@ -152,13 +189,67 @@ Player createCharacter() {
     
     return newPlayer;
 }
-Enemy spawnGoblin(){
-    Enemy goblin;
-    goblin.name = "Гоблин";
-    goblin.hp = 5;
-    goblin.damage = 2;
 
-    return goblin;
+Enemy spawnRandomEnemy(int caveLevel) {
+    Enemy enemy;
+    
+    // Если это первые шаги (подземелья 1, 2, 3) — бережем героя
+    if (caveLevel <= 3) {
+        int roll = rand() % 3; // Случайное число от 0 до 2
+        if (roll == 0) {
+            enemy.name = "Слизень";
+            enemy.hp = 15;
+            enemy.damage = 6;
+        } else if (roll == 1) {
+            enemy.name = "Гигантская крыса";
+            enemy.hp = 35;
+            enemy.damage = 10;
+        } else {
+            enemy.name = "Гоблин-разбойник";
+            enemy.hp = 50;
+            enemy.damage = 15;
+        }
+    } 
+    // Средняя сложность (подземелья с 4 по 7)
+    else if (caveLevel <= 7) {
+        int roll = rand() % 3; // От 0 до 2
+        if (roll == 0) {
+            enemy.name = "Скелет-меченосец";
+            enemy.hp = 65;
+            enemy.damage = 20;
+        } else if (roll == 1) {
+            enemy.name = "Орк-берсерк";
+            enemy.hp = 80;
+            enemy.damage = 25;
+        } else {
+            enemy.name = "Темный маг";
+            enemy.hp = 70;
+            enemy.damage = 32;
+        }
+    } 
+    // Хардкорные глубокие подземелья (от 8 уровня и выше)
+    else {
+        int roll = rand() % 4; // От 0 до 3
+        if (roll == 0) {
+            enemy.name = "Пещерный тролль";
+            enemy.hp = 110;
+            enemy.damage = 38;
+        } else if (roll == 1) {
+            enemy.name = "Каменный голем";
+            enemy.hp = 140;
+            enemy.damage = 45;
+        } else if (roll == 2) {
+            enemy.name = "Демон глубин";
+            enemy.hp = 170;
+            enemy.damage = 55;
+        } else {
+            enemy.name = "Древний Дракон";
+            enemy.hp = 220;
+            enemy.damage = 70;
+        }
+    }
+
+    return enemy;
 }
 // Пример функции генерации случайного предмета
 Item generateRandomItem() {
